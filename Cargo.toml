@@ -3,6 +3,9 @@ name = "cmdmat"
 version = "0.1.0"
 authors = ["Kevin Robert Stravers <macocio@gmail.com>"]
 edition = "2018"
+description = "Command matcher for matching lists of strings against handlers"
+license = "LGPL-3.0-or-later"
+keywords = ["command", "match", "interpreter"]
 
 [lib]
 name = "cmdmat"
