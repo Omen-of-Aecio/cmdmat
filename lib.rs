@@ -74,9 +74,9 @@
 //! const SPEC: Spec<Accept, Deny, Context> = (&[("my-command-name", Some(&DEC))], print_hello);
 //!
 //! fn print_hello(_ctx: &mut Context, args: &[Accept]) -> Result<String, String> {
-//!     println!["Hello world!"];
-//!     assert_eq![1, args.len()];
-//!     println!["The args I got: {:?}", args];
+//!     println!("Hello world!");
+//!     assert_eq!(1, args.len());
+//!     println!("The args I got: {:?}", args);
 //!     Ok("".into())
 //! }
 //!
@@ -99,21 +99,19 @@
 //!     decider: decider_function,
 //! };
 //!
-//! fn main() {
-//!     let mut mapping = Mapping::default();
-//!     mapping.register(SPEC).unwrap();
+//! let mut mapping = Mapping::default();
+//! mapping.register(SPEC).unwrap();
 //!
-//!     let handler = mapping.lookup(&["my-command-name", "123"]);
+//! let handler = mapping.lookup(&["my-command-name", "123"]);
 //!
-//!     match handler {
-//!         Ok((func, buf)) => {
-//!             let mut ctx = 0i32;
-//!             func(&mut ctx, &buf); // prints hello world
-//!         }
-//!         Err(look_err) => {
-//!             println!["{:?}", look_err];
-//!             assert![false];
-//!         }
+//! match handler {
+//!     Ok((func, buf)) => {
+//!         let mut ctx = 0i32;
+//!         func(&mut ctx, &buf); // prints hello world
+//!     }
+//!     Err(look_err) => {
+//!         println!("{:?}", look_err);
+//!         assert!(false);
 //!     }
 //! }
 //! ```
@@ -155,24 +153,22 @@
 //!     decider: decider_function,
 //! };
 //!
-//! fn main() {
-//!     let mut mapping = Mapping::default();
-//!     mapping.register(SPEC).unwrap();
+//! let mut mapping = Mapping::default();
+//! mapping.register(SPEC).unwrap();
 //!
-//!     // When a decider is "next-up", we get its description
-//!     // We can't know in advance what the decider will consume because it is arbitrary code,
-//!     // so we will have to trust its description to be valuable.
-//!     let decider_desc = mapping.partial_lookup(&["my-command-name"]).unwrap().right().unwrap();
-//!     assert_eq!["<i32>", decider_desc];
+//! // When a decider is "next-up", we get its description
+//! // We can't know in advance what the decider will consume because it is arbitrary code,
+//! // so we will have to trust its description to be valuable.
+//! let decider_desc = mapping.partial_lookup(&["my-command-name"]).unwrap().right().unwrap();
+//! assert_eq!("<i32>", decider_desc);
 //!
-//!     // In this case the decider succeeded during the partial lookup, so the next step in the
-//!     // tree is the "something" node.
-//!     let mapping = mapping.partial_lookup(&["my-command-name", "123"]).unwrap().left().unwrap();
-//!     let MappingEntry { literal, decider, finalizer, submap } = mapping.get_direct_keys().next().unwrap();
-//!     assert_eq!["something", literal];
-//!     assert![decider.is_none()];
-//!     assert![finalizer.is_some()];
-//! }
+//! // In this case the decider succeeded during the partial lookup, so the next step in the
+//! // tree is the "something" node.
+//! let mapping = mapping.partial_lookup(&["my-command-name", "123"]).unwrap().left().unwrap();
+//! let MappingEntry { literal, decider, finalizer, submap } = mapping.get_direct_keys().next().unwrap();
+//! assert_eq!("something", literal);
+//! assert!(decider.is_none());
+//! assert!(finalizer.is_some());
 //! ```
 #![deny(
     missing_docs,
@@ -523,19 +519,19 @@ mod tests {
         let mut mapping: Mapping<Accept, (), Context> = Mapping::default();
         mapping.register((&[("add-one", None)], add_one)).unwrap();
         let handler = mapping.lookup(&["add-one"]).unwrap();
-        assert_eq![0, handler.1.len()];
+        assert_eq!(0, handler.1.len());
         let mut ctx = 123;
         handler.0(&mut ctx, &handler.1).unwrap();
-        assert_eq![124, ctx];
+        assert_eq!(124, ctx);
     }
 
     #[test]
     fn mapping_does_not_exist() {
         let mapping: Mapping<Accept, (), Context> = Mapping::default();
         if let Err(err) = mapping.lookup(&["add-one"]) {
-            assert_eq![LookError::UnknownMapping("add-one".into()), err];
+            assert_eq!(LookError::UnknownMapping("add-one".into()), err);
         } else {
-            assert![false];
+            assert!(false);
         }
     }
 
@@ -552,10 +548,10 @@ mod tests {
 
         let mut mapping: Mapping<Accept, (), Context> = Mapping::default();
         mapping.register((&[("add-one", None)], add_one)).unwrap();
-        assert_eq![
+        assert_eq!(
             Err(RegError::DeciderAlreadyExists),
             mapping.register((&[("add-one", Some(&DECIDE))], add_one))
-        ];
+        );
     }
 
     #[test]
@@ -574,9 +570,9 @@ mod tests {
             .register((&[("add-one", Some(&DECIDE))], add_one))
             .unwrap();
         if let Err(err) = mapping.register((&[("add-one", None)], add_one)) {
-            assert_eq![RegError::FinalizerAlreadyExists, err];
+            assert_eq!(RegError::FinalizerAlreadyExists, err);
         } else {
-            assert![false];
+            assert!(false);
         }
     }
 
@@ -598,8 +594,8 @@ mod tests {
             .unwrap();
 
         let out = mapping.lookup(&["add-one", "123"]).unwrap();
-        assert_eq![1, out.1.len()];
-        assert_eq![true, out.1[0]];
+        assert_eq!(1, out.1.len());
+        assert_eq!(true, out.1[0]);
     }
 
     #[test]
@@ -621,9 +617,9 @@ mod tests {
             .unwrap();
 
         if let Err(err) = mapping.lookup(&["add-one", "123"]) {
-            assert_eq![LookError::DeciderAdvancedTooFar, err];
+            assert_eq!(LookError::DeciderAdvancedTooFar, err);
         } else {
-            assert![false];
+            assert!(false);
         }
     }
 
@@ -646,9 +642,9 @@ mod tests {
             .unwrap();
 
         let output = mapping.lookup(&["add-one", "123", "456"]).unwrap().1;
-        assert_eq![2, output.len()];
-        assert_eq![true, output[0]];
-        assert_eq![false, output[1]];
+        assert_eq!(2, output.len());
+        assert_eq!(true, output[0]);
+        assert_eq!(false, output[1]);
     }
 
     #[test]
@@ -668,7 +664,7 @@ mod tests {
             .unwrap();
 
         let output = mapping.lookup(&["add-one", "123", "456"]).unwrap();
-        assert_eq![0, output.1.len()];
+        assert_eq!(0, output.1.len());
     }
 
     #[test]
@@ -702,11 +698,11 @@ mod tests {
             .unwrap();
 
         let handler = mapping.lookup(&["sum", "123", "456", "789"]).unwrap();
-        assert_eq![3, handler.1.len()];
+        assert_eq!(3, handler.1.len());
 
         let mut ctx = 0;
         handler.0(&mut ctx, &handler.1).unwrap();
-        assert_eq![1368, ctx];
+        assert_eq!(1368, ctx);
     }
 
     #[test]
@@ -721,14 +717,14 @@ mod tests {
 
         mapping.lookup(&["lorem", "ipsum", "dolor"]).unwrap();
         if let Err(err) = mapping.lookup(&["lorem", "ipsum", "dolor", "exceed"]) {
-            assert_eq![LookError::UnknownMapping("exceed".into()), err];
+            assert_eq!(LookError::UnknownMapping("exceed".into()), err);
         } else {
-            assert![false];
+            assert!(false);
         }
         if let Err(err) = mapping.lookup(&["lorem", "ipsum"]) {
-            assert_eq![LookError::FinalizerDoesNotExist, err];
+            assert_eq!(LookError::FinalizerDoesNotExist, err);
         } else {
-            assert![false];
+            assert!(false);
         }
     }
 
@@ -747,9 +743,9 @@ mod tests {
 
         mapping.lookup(&["lorem", "ipsum", "dolor"]).unwrap();
         if let Err(err) = mapping.lookup(&["lorem", "ipsum", "dolor", "exceed"]) {
-            assert_eq![LookError::UnknownMapping("exceed".into()), err];
+            assert_eq!(LookError::UnknownMapping("exceed".into()), err);
         } else {
-            assert![false];
+            assert!(false);
         }
         mapping.lookup(&["lorem", "ipsum"]).unwrap();
     }
@@ -804,22 +800,22 @@ mod tests {
             .left()
             .unwrap();
         let key = part.get_direct_keys().next().unwrap();
-        assert_eq!["dolor", key.literal];
-        assert![key.decider.is_none()];
-        assert![key.finalizer.is_some()];
+        assert_eq!("dolor", key.literal);
+        assert!(key.decider.is_none());
+        assert!(key.finalizer.is_some());
 
         let part = mapping.partial_lookup(&["lorem"]).unwrap().left().unwrap();
         let key = part.get_direct_keys().next().unwrap();
-        assert_eq!["ipsum", key.literal];
-        assert![key.decider.is_none()];
-        assert![key.finalizer.is_some()];
+        assert_eq!("ipsum", key.literal);
+        assert!(key.decider.is_none());
+        assert!(key.finalizer.is_some());
 
         let part = mapping.partial_lookup(&["mirana"]).unwrap().left().unwrap();
         let key = part.get_direct_keys().next().unwrap();
-        assert_eq!["ipsum", key.literal];
-        assert![key.decider.is_some()];
-        assert_eq!["Do nothing", key.decider.unwrap().description];
-        assert![key.finalizer.is_some()];
+        assert_eq!("ipsum", key.literal);
+        assert!(key.decider.is_some());
+        assert_eq!("Do nothing", key.decider.unwrap().description);
+        assert!(key.finalizer.is_some());
 
         let part = mapping
             .partial_lookup(&["consume", "123"])
@@ -827,16 +823,16 @@ mod tests {
             .left()
             .unwrap();
         let key = part.get_direct_keys().next().unwrap();
-        assert_eq!["dummy", key.literal];
-        assert![key.decider.is_none()];
-        assert![key.finalizer.is_some()];
+        assert_eq!("dummy", key.literal);
+        assert!(key.decider.is_none());
+        assert!(key.finalizer.is_some());
 
         let part = mapping
             .partial_lookup(&["consume"])
             .unwrap()
             .right()
             .unwrap();
-        assert_eq!["Consume a single element, regardless of what it is", part];
+        assert_eq!("Consume a single element, regardless of what it is", part);
     }
 
     // ---
