@@ -178,11 +178,11 @@
     unused_import_braces,
     unused_qualifications
 )]
-#![feature(test, try_trait)]
+#![feature(test, try_trait_v2)]
 extern crate test;
 
 use smallvec::SmallVec;
-use std::{collections::HashMap, ops::Try};
+use std::{collections::HashMap, ops::{ControlFlow, FromResidual, Try}};
 
 // ---
 
@@ -246,20 +246,24 @@ pub enum Decision<D> {
     Deny(D),
 }
 
+impl<D> FromResidual for Decision<D> {
+    fn from_residual(residual: D) -> Self {
+        Decision::Deny(residual)
+    }
+}
+
 impl<D> Try for Decision<D> {
-    type Ok = usize;
-    type Error = D;
-    fn into_result(self) -> Result<Self::Ok, Self::Error> {
+    type Output = usize;
+    type Residual = D;
+    fn from_output(output: Self::Output) -> Self {
+        Decision::Accept(output)
+    }
+
+    fn branch(self) -> ControlFlow<Self::Residual, Self::Output> {
         match self {
-            Decision::Accept(value) => Ok(value),
-            Decision::Deny(value) => Err(value),
+            Decision::Accept(value) => ControlFlow::Continue(value),
+            Decision::Deny(value) => ControlFlow::Break(value),
         }
-    }
-    fn from_error(v: Self::Error) -> Self {
-        Decision::Deny(v)
-    }
-    fn from_ok(v: Self::Ok) -> Self {
-        Decision::Accept(v)
     }
 }
 
