@@ -182,7 +182,11 @@
 extern crate test;
 
 use smallvec::SmallVec;
-use std::{collections::HashMap, ops::{ControlFlow, FromResidual, Try}};
+use std::{
+    collections::HashMap,
+    convert::Infallible,
+    ops::{ControlFlow, FromResidual, Try},
+};
 
 // ---
 
@@ -246,7 +250,13 @@ pub enum Decision<D> {
     Deny(D),
 }
 
-impl<D> FromResidual for Decision<D> {
+impl<R> FromResidual<Result<Infallible, R>> for Decision<R> {
+    fn from_residual(residual: Result<Infallible, R>) -> Self {
+        Decision::Deny(residual.err().unwrap())
+    }
+}
+
+impl<D> FromResidual<D> for Decision<D> {
     fn from_residual(residual: D) -> Self {
         Decision::Deny(residual)
     }
